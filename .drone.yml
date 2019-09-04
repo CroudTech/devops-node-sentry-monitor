@@ -19,15 +19,24 @@ pipeline:
     repo: 245542037479.dkr.ecr.eu-west-2.amazonaws.com/devops/sentry-new-relic-metrics
     skip_untagged: true
     when:
-      event:
-      - tag
+      event: tag
+      status: success
+      ref: refs/tags/docker*
   build:
     image: node
+    when:
+      event: tag
+      status: success
+      ref: refs/tags/lambda*
     commands:
       - cd src && yarn
       - cd src && zip -r -9 sentry-new-relic-metrics-${DRONE_TAG}.zip *
   s3-publish:
     image: plugins/s3
+    when:
+      event: tag
+      status: success
+      ref: refs/tags/lambda*
     acl: private
     region: eu-west-2
     bucket: croudtech-devops-serverless-functions
@@ -37,6 +46,7 @@ pipeline:
     when:
       event: deployment
       environment: lambda
+      ref: refs/tags/lambda*
     image: omerxx/drone-lambda-plugin
     pull: true
     function_name: sentry-new-relic-metrics
