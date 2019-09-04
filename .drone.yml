@@ -30,8 +30,10 @@ pipeline:
       status: success
       ref: refs/tags/lambda*
     commands:
-      - cd src && yarn
-      - cd src && zip -r -9 sentry-new-relic-metrics-${DRONE_TAG}.zip *
+      - apt-get update && apt-get install zip
+      - cd src
+      - yarn
+      - zip -r -9 sentry-new-relic-metrics-${DRONE_TAG}.zip *
   s3-publish:
     image: plugins/s3
     when:
