@@ -44,7 +44,7 @@ pipeline:
     region: eu-west-2
     bucket: croudtech-devops-serverless-functions
     target: monitoring
-    source: sentry-new-relic-metrics-${DRONE_TAG}.zip
+    source: src/sentry-new-relic-metrics-${DRONE_TAG}.zip
   deploy-lambda:
     when:
       event: deployment
