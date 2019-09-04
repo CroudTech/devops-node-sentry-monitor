@@ -24,7 +24,7 @@ pipeline:
       status: success
       ref: refs/tags/docker*
   build:
-    image: node
+    image: node:10
     when:
       event: tag
       status: success
