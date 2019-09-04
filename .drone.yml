@@ -53,9 +53,9 @@ pipeline:
       ref: refs/tags/lambda*
     image: omerxx/drone-lambda-plugin
     pull: true
-    function_name: sentry-new-relic-metrics
+    function_name:  
     s3_bucket: croudtech-devops-serverless-functions
     file_name: monitoring/sentry-new-relic-metrics-${DRONE_TAG}.zip
     secrets:
-      - AWS_DEFAULT_REGION
+      - aws_default_region
   
