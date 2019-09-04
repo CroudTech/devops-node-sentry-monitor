@@ -34,6 +34,7 @@ pipeline:
       - cd src
       - yarn
       - zip -r -9 sentry-new-relic-metrics-${DRONE_TAG}.zip *
+      - mv sentry-new-relic-metrics-${DRONE_TAG}.zip ../
   s3-publish:
     image: plugins/s3
     when:
@@ -44,7 +45,7 @@ pipeline:
     region: eu-west-2
     bucket: croudtech-devops-serverless-functions
     target: monitoring
-    source: src/sentry-new-relic-metrics-${DRONE_TAG}.zip
+    source: sentry-new-relic-metrics-${DRONE_TAG}.zip
   deploy-lambda:
     when:
       event: deployment
