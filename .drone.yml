@@ -8,8 +8,9 @@ pipeline:
     privileged: true
     pull: true
     when:
-      event:
-      - tag
+      event: tag
+      status: success
+      ref: refs/tags/docker*
   publish-ecr:
     image: croudtech/drone-docker-ecr:latest
     privileged: true
