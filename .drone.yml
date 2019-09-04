@@ -51,7 +51,7 @@ pipeline:
       event: deployment
       environment: lambda
       ref: refs/tags/lambda*
-    image: omerxx/drone-lambda-plugin
+    image: croudtech/drone-lambda-plugin
     pull: true
     function_name: sentry-new-relic-metrics
     s3_bucket: croudtech-devops-serverless-functions
