@@ -21,4 +21,25 @@ pipeline:
     when:
       event:
       - tag
+  build:
+    image: node
+    commands:
+      - cd src && yarn
+      - cd src && zip -r -9 sentry-new-relic-metrics-${DRONE_TAG}.zip *
+  s3-publish:
+    image: plugins/s3
+    acl: private
+    region: eu-west-2
+    bucket: croudtech-devops-serverless-functions
+    target: monitoring
+    source: sentry-new-relic-metrics-${DRONE_TAG}.zip
+  deploy-lambda:
+    when:
+      event: deployment
+      environment: lambda
+    image: omerxx/drone-lambda-plugin
+    pull: true
+    function_name: sentry-new-relic-metrics
+    s3_bucket: croudtech-devops-serverless-functions
+    file_name: monitoring/sentry-new-relic-metrics-${DRONE_TAG}.zip
   
