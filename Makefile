@@ -21,11 +21,11 @@ push:
 
 .PHONY: develop
 develop:
-	@docker run --env-file=.env -v `pwd`/app:/app --workdir /app -it $(DOCKER_IMAGE_URL) bash
+	@docker run --env-file=.env -v `pwd`/src:/app --workdir /app -it $(DOCKER_IMAGE_URL) bash
 
 .PHONY: execute
 execute: 
-	@docker run --env-file=.env -it $(DOCKER_IMAGE_URL)
+	@docker run -p 3000:3000 --env-file=.env -it $(DOCKER_IMAGE_URL)
 
 .PHONY: all
 all: build push

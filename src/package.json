@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "start": "node /app/index.js"
+  },
+  "dependencies": {
+    "sentry-monitor": "https://github.com/CroudTech/sentry-monitor.git",
+    "sync-request": "^6.1.0"
+  }
+}

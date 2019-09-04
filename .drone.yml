@@ -1,0 +1,24 @@
+pipeline:
+  setup-image-tag:
+    environment:
+    - DOCKER_REPO=245542037479.dkr.ecr.eu-west-2.amazonaws.com/devops/sentry-new-relic-metrics
+    - PROTECTED_FILES_LOCATION=/public/protected-files
+    - PUBLIC_FOLDER=/public
+    image: croudtech/drone-pipeline-setup:latest
+    privileged: true
+    pull: true
+    when:
+      event:
+      - tag
+  publish-ecr:
+    image: croudtech/drone-docker-ecr:latest
+    privileged: true
+    pull: true
+    region: eu-west-2
+    registry: 245542037479.dkr.ecr.eu-west-2.amazonaws.com
+    repo: 245542037479.dkr.ecr.eu-west-2.amazonaws.com/devops/sentry-new-relic-metrics
+    skip_untagged: true
+    when:
+      event:
+      - tag
+  
