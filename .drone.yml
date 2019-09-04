@@ -56,6 +56,8 @@ pipeline:
     function_name: sentry-new-relic-metrics
     s3_bucket: croudtech-devops-serverless-functions
     file_name: monitoring/sentry-new-relic-metrics-${DRONE_TAG}.zip
+    environment: 
+      aws_default_region: eu-west-2
     secrets:
       - aws_default_region
   
