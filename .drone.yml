@@ -10,7 +10,6 @@ pipeline:
     when:
       event: tag
       status: success
-      ref: refs/tags/docker*
   publish-ecr:
     image: croudtech/drone-docker-ecr:latest
     privileged: true
@@ -22,7 +21,6 @@ pipeline:
     when:
       event: tag
       status: success
-      ref: refs/tags/docker*
   build:
     image: node:10
     when:
