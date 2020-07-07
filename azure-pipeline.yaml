@@ -1,0 +1,123 @@
+trigger:
+  batch: true
+  branches:
+    include:
+    - master
+    - releases/*
+    - feature/*
+    - integration
+pr:
+  branches:
+    include:
+    - master
+    - releases/*
+variables:
+- name: docker_repo
+  value: devops/sentry-new-relic-metrics
+resources:
+  repositories:
+  - repository: self
+  containers:
+  - container: postgres
+    image: postgres:10-alpine
+    options: -e POSTGRES_USER=dev -e POSTGRES_PASSWORD=dev
+    ports:
+    - 5432:5432
+  - container: redis
+    image: redis
+    ports:
+    - 6379:6379
+stages:
+- stage: Test
+  pool:
+    vmImage: ubuntu-latest
+  displayName: Test
+  jobs:
+  - job: Test
+    services:
+      postgres: postgres
+      redis: redis
+    steps:
+    - task: UsePythonVersion@0
+      name: set_python_version
+      displayName: Set Python Version
+      inputs:
+        versionSpec: '3.8'
+        addToPath: true
+        architecture: x64
+    - script: |
+        export POSTGRES_HOST=127.0.0.1
+        export REDIS_URL=redis://127.0.0.1:6379/1
+        export REDIS_HOST=127.0.0.1
+        export ENVIRONMENT=dev
+        apt-get -y update && apt-get -y install libpq-dev gcc
+        pip install -U pipenv wheel
+        pipenv install --system --deploy --dev
+        black --check .
+        flake8
+        isort -c
+        py.test --junit-xml ./test-results.xml --cov=app,journals --cov-report xml
+      name: test_python
+      displayName: Run Tests
+    - task: PublishTestResults@2
+      condition: succeededOrFailed()
+      inputs:
+        testResultsFormat: JUnit
+        testResultsFiles: '**/test-*.xml'
+        testRunTitle: $(Build.Repository.Name)-$(Build.SourceBranchName)-$(Build.BuildId)
+    - task: PublishCodeCoverageResults@1
+      inputs:
+        codeCoverageTool: Cobertura
+        summaryFileLocation: ./coverage.xml
+        pathToSources: ./
+        reportDirectory: ./
+- stage: Build
+  pool:
+    vmImage: ubuntu-latest
+  displayName: Build image
+  dependsOn: Test
+  jobs:
+  - job: Build
+    displayName: Build
+    condition: and(succeeded(), in(variables['Build.SourceBranchName'], 'integration',
+      'master', 'main'))
+    steps:
+    - task: GitVersion@5
+      inputs:
+        versionSpec: 5.x
+        targetPath: ./
+        useConfigFile: true
+        configFilePath: ./GitVersion.yml
+    - task: DockerInstaller@0
+      name: docker_install
+      displayName: Install docker
+      inputs:
+        dockerVersion: 17.09.0-ce
+    - task: Docker@2
+      name: docker_build
+      displayName: Build Docker Image
+      inputs:
+        command: build
+        Dockerfile: '**/Dockerfile'
+        tags: $(GitVersion.SemVer)
+        repository: ${{ variables.docker_repo }}
+    - task: ECRPushImage@1
+      inputs:
+        awsCredentials: AWS_shared
+        regionName: eu-west-2
+        imageSource: imagename
+        sourceImageName: ${{ variables.docker_repo }}
+        sourceImageTag: $(GitVersion.SemVer)
+        repositoryName: ${{ variables.docker_repo }}
+        pushTag: $(GitVersion.SemVer)
+    - task: GitHubRelease@1
+      inputs:
+        gitHubConnection: GithubCroudControl
+        repositoryName: $(Build.Repository.Name)
+        action: create
+        target: $(Build.SourceVersion)
+        tagSource: userSpecifiedTag
+        tag: $(GitVersion.SemVer)
+        title: $(GitVersion.SemVer)
+        changeLogCompareToRelease: lastFullRelease
+        changeLogType: commitBased
